@@ -7,10 +7,11 @@ var auth = require("../middlewares/auth")
 var Product = require("../models/Product");
 const { compareSync } = require('bcrypt');
 const collectionModel = require('../models/collection');
+const sellerModel=require('../models/seller');
 const upload=require('../utils/multer')
 const fs=require('fs');
 const path = require('path');
-
+const bcrypt=require('bcrypt')
 
 const fileHandler=(err,doc)=>{
     if(err){
@@ -321,13 +322,13 @@ router.post('/collection', auth.isLoggedIn,auth.authRole,upload.single('image'),
         regularDetails,
         organicSubCategoryDetails,
         status,
-        image:req.file.filename
+        image:req.file ? req.file.filename : ''
     })
     const data=await collection.save();
-    res.status(201).json({message:"Collection created Successfully",success:true,data:data})
+    res.status(200).json({message:"Collection created Successfully",success:true,data:data})
 }catch(err){
     console.log(err)
-    res.status(201).json({message:"Something went wrong",success:false,err:err.message})
+    res.status(400).json({message:"Something went wrong",success:false,err:err.message})
 }
 })
 
@@ -388,4 +389,82 @@ else{
     }
 })
 
+
+//add seller
+
+router.post('/seller',auth.isLoggedIn,auth.authRole,upload.fields([{
+    name:'logo',
+    maxCount:1
+},{
+name:'images',
+maxCount:4
+}]),async(req,res)=>{
+console.log(req.files)
+    try{
+const {name,email,password,phone,businessTitle,tagline,aboutBusiness,aboutFounder,role}=req.body
+
+let imageArray;
+if(req.files.images){
+     imageArray=req.files.images.map((data)=>{
+        return data.filename
+    })
+}
+else{
+    imageArray=[];
+}
+
+const encryptPassword=await bcrypt.hash(password,10)
+
+const seller=new sellerModel({
+userId:req.user._id,    
+name,
+email,
+password:encryptPassword,
+phone,
+businessTitle,
+tagline:tagline,
+aboutBusiness,
+aboutFounder,
+role,
+logo:req.files.logo ? req.files.logo[0].filename : '',
+images:imageArray
+})
+const data=await seller.save();
+res.status(201).json({message:"Seller addded successfully",success:true,data:data})
+    }catch(err){
+        console.log(err)
+res.status(400).json({message:"Something went wrong",success:false,err:err.message})
+    }
+})
+
+
+router.delete('/seller/:id',async(req,res)=>{
+try{
+const id=req.params.id;
+const seller=await sellerModel.findById(id)
+if(seller.logo){
+    fs.unlink(path.join(__dirname,'../uploads/'+seller.logo),fileHandler)
+}
+if(seller.images){
+    seller.images.map((data)=>{
+        fs.unlink(path.join(__dirname,'../uploads/'+data),fileHandler)
+    })
+}
+const data=await seller.remove();
+res.status(200).json({message:"seller deleted successfully",success:true,data:data})
+}catch(err){
+    console.log(err)
+    res.status(400).json({message:"Something went wrong",success:false,err:err.message})
+}
+})
+
+router.get('/seller',async(req,res)=>{
+    try{
+        const data=await sellerModel.find({}).sort({'createdAt':-1})
+        res.status(200).json({message:"All seller retreived",success:true,data:data})
+    }
+    catch(err){
+        res.status(400).json({message:"Something went wrong",success:false,err:err.message})
+    }
+})
 module.exports = router;
