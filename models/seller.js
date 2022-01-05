@@ -24,7 +24,6 @@ const sellerSchema=new Schema({
     phone: {
         type: String,
         required: [true, 'Please fill phone number field'],
-        match: [/^\d{10}$/, 'Please fill a valid phone number']
     },
     logo:{
         type:String

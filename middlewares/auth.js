@@ -13,13 +13,16 @@ module.exports = {
             } else
             {
                 let profileData = await jwt.verify(token, process.env.TOKEN_KEY);
-                const user=await userModel.findById(profileData.userID)
+                const user=await userModel.findById(profileData.id)
+                if(!user){
+                    throw new Error("user not found")
+                }
                 req.user = user;
                 next();
             }
         } catch (error)
         {
-            next(error);
+            res.status(401).json({message:"Unauthorized:No token provided. First Sign In"})
         }
     },
 

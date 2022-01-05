@@ -8,6 +8,7 @@ var Product = require("../models/Product");
 const { compareSync } = require('bcrypt');
 const collectionModel = require('../models/collection');
 const sellerModel=require('../models/seller');
+const variationModel=require('../models/variations')
 const upload=require('../utils/multer')
 const fs=require('fs');
 const path = require('path');
@@ -374,34 +375,31 @@ const data={
     image:req.file.filename
 }
 const collection=await collectionModel.findById(id)
-if(collection){
+if(req.file){
     fs.unlink(path.join(__dirname,'../uploads/'+collection.image),fileHandler);
+}
   const col=  await collectionModel.findByIdAndUpdate(id,data,{
         new: true
         })
 res.status(200).json({message:"collection updated Successfully",success:true,data:col})
-}
-else{
-    res.status(200).json({message:"collection does not exist",success:false})
-}
     }catch(err){
         res.status(400).json({message:"Something Went Wrong",success:false,err:err.message})
     }
 })
 
 
-//add seller
+//seller CRUD
 
-router.post('/seller',auth.isLoggedIn,auth.authRole,upload.fields([{
+router.post('/seller',auth.isLoggedIn,upload.fields([{
     name:'logo',
     maxCount:1
 },{
 name:'images',
 maxCount:4
 }]),async(req,res)=>{
-console.log(req.files)
+
     try{
-const {name,email,password,phone,businessTitle,tagline,aboutBusiness,aboutFounder,role}=req.body
+const {name,email,password,phone,businessTitle,tagline,aboutBusiness,aboutFounder,role,status}=req.body
 
 let imageArray;
 if(req.files.images){
@@ -415,6 +413,16 @@ else{
 
 const encryptPassword=await bcrypt.hash(password,10)
 
+//save seller  in userModel
+const userdata=new userModel({
+name,
+email,
+password:encryptPassword,
+role
+})
+await userdata.save();
+
+
 const seller=new sellerModel({
 userId:req.user._id,    
 name,
@@ -426,6 +434,7 @@ tagline:tagline,
 aboutBusiness,
 aboutFounder,
 role,
+status,
 logo:req.files.logo ? req.files.logo[0].filename : '',
 images:imageArray
 })
@@ -438,7 +447,7 @@ res.status(400).json({message:"Something went wrong",success:false,err:err.messa
 })
 
 
-router.delete('/seller/:id',async(req,res)=>{
+router.delete('/seller/:id',auth.isLoggedIn,async(req,res)=>{
 try{
 const id=req.params.id;
 const seller=await sellerModel.findById(id)
@@ -458,13 +467,108 @@ res.status(200).json({message:"seller deleted successfully",success:true,data:da
 }
 })
 
-router.get('/seller',async(req,res)=>{
+router.get('/seller',auth.isLoggedIn,async(req,res)=>{
     try{
         const data=await sellerModel.find({}).sort({'createdAt':-1})
         res.status(200).json({message:"All seller retreived",success:true,data:data})
     }
     catch(err){
         res.status(400).json({message:"Something went wrong",success:false,err:err.message})
+    }
+})
+
+router.put('/seller/:id',auth.isLoggedIn,upload.fields([{
+    name:'logo',
+    maxCount:1
+},{
+name:'images',
+maxCount:4
+}]),async(req,res)=>{
+    try{
+        const id=req.params.id;
+        const {name,businessTitle,tagline,aboutBusiness,aboutFounder,role,status}=req.body
+        const seller=await sellerModel.findById(id);
+        if(req.files.logo ){
+            fs.unlink(path.join(__dirname,'../uploads/'+seller.logo),fileHandler)
+        }
+        if(req.files.images){
+            seller.images.map((data)=>{
+                fs.unlink(path.join(__dirname,'../uploads/'+data),fileHandler)
+            })
+        }
+        let imageArray;
+if(req.files.images){
+     imageArray=req.files.images.map((data)=>{
+        return data.filename
+    })
+}
+        const data=await sellerModel.findByIdAndUpdate(id,{
+            name,
+            businessTitle,
+            tagline:tagline,
+            aboutBusiness,
+            aboutFounder,
+            role,
+            logo:req.files.logo ? req.files.logo[0].filename : seller.logo,
+            images:imageArray,
+            status
+        })
+res.status(200).json({message:'seller updated successfully',success:true,data:data})
+    }catch(err){
+        console.log(err);
+        res.status(400).json({message:"Something went wrong",success:false,err:err})
+    }
+})
+
+// variation CRUD
+router.post('/variation',auth.isLoggedIn,async(req,res)=>{
+    try{
+const {variationName,status}=req.body
+const variation=new variationModel({
+    userId:req.user._id,
+    variationName,
+    status
+})
+const data=await variation.save();
+res.status(201).json({message:"variation added successfully",success:true,data:data})
+    }catch(err){
+res.status(400).json({message:"Something went wrong",success:false,err:err})
+    }
+})
+
+router.get('/variation',auth.isLoggedIn,async(req,res)=>{
+    try{
+const data=await variationModel.find({}).sort({'createdAt':-1});
+res.status(200).json({message:"variation added successfully",success:true,data})
+    }catch(err){
+        res.status(400).json({message:"Something went wrong",success:false,err:err})
+    }
+})
+
+router.delete('/variation/:id',auth.isLoggedIn,async(req,res)=>{
+    try{
+        const id=req.params.id;
+        const product=await variationModel.findById(id);
+        if(!product){
+         return res.status(400).json({message:"Product not found",success:false})
+        }
+     const data=  await product.remove()
+        res.status(200).json({message:"variation deleted successfully",success:true,data})
+            }catch(err){
+                res.status(400).json({message:"Something went wrong",success:false,err:err})
+            }
+})
+
+router.put('/variation/:id',auth.isLoggedIn,async(req,res)=>{
+    try{
+        const id=req.params.id;
+        const {variationName,status}=req.body
+        const data=await variationModel.findByIdAndUpdate(id,{
+            variationName,status
+        })
+        res.status(200).json({message:"variation updated successfully",success:true,data}) 
+    }catch(err){
+        res.status(400).json({message:"Something went wrong",success:false,err:err})
     }
 })
 module.exports = router;
