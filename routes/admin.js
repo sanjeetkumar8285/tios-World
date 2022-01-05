@@ -459,6 +459,10 @@ if(seller.images){
         fs.unlink(path.join(__dirname,'../uploads/'+data),fileHandler)
     })
 }
+const userData=await userModel.findOne({email:seller.email})
+if(userData){
+    await userData.remove();
+}
 const data=await seller.remove();
 res.status(200).json({message:"seller deleted successfully",success:true,data:data})
 }catch(err){
