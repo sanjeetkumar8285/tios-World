@@ -9,6 +9,7 @@ const { compareSync } = require('bcrypt');
 const collectionModel = require('../models/collection');
 const sellerModel=require('../models/seller');
 const variationModel=require('../models/variations')
+const variationUnitModel=require('../models/variationsUnit');
 const upload=require('../utils/multer')
 const fs=require('fs');
 const path = require('path');
@@ -413,14 +414,6 @@ else{
 
 const encryptPassword=await bcrypt.hash(password,10)
 
-//save seller  in userModel
-const userdata=new userModel({
-name,
-email,
-password:encryptPassword,
-role
-})
-await userdata.save();
 
 
 const seller=new sellerModel({
@@ -439,6 +432,14 @@ logo:req.files.logo ? req.files.logo[0].filename : '',
 images:imageArray
 })
 const data=await seller.save();
+//save seller  in userModel
+const userdata=new userModel({
+    name,
+    email,
+    password:encryptPassword,
+    role
+    })
+    await userdata.save();
 res.status(201).json({message:"Seller addded successfully",success:true,data:data})
     }catch(err){
         console.log(err)
@@ -543,7 +544,7 @@ res.status(400).json({message:"Something went wrong",success:false,err:err})
 router.get('/variation',auth.isLoggedIn,async(req,res)=>{
     try{
 const data=await variationModel.find({}).sort({'createdAt':-1});
-res.status(200).json({message:"variation added successfully",success:true,data})
+res.status(200).json({message:"All variation retreived",success:true,data})
     }catch(err){
         res.status(400).json({message:"Something went wrong",success:false,err:err})
     }
@@ -574,5 +575,33 @@ router.put('/variation/:id',auth.isLoggedIn,async(req,res)=>{
     }catch(err){
         res.status(400).json({message:"Something went wrong",success:false,err:err})
     }
+})
+
+
+
+// variations unit crud
+
+router.post('/variationUnit',async(req,res)=>{
+try{
+    const {variationName,unitName,status}=req.body
+    const variations=new variationUnitModel({
+        variationName,
+        unitName,
+        status
+    })
+    const data=await variations.save();
+    res.status(201).json({message:"variation unit created Successfully",success:true,data:data})
+}catch(err){
+    res.status(400).json({message:"Something went wrong",success:false,err:err})
+}
+})
+
+router.get('/variationUnit',async(req,res)=>{
+try{
+const data=await variationUnitModel.find({}).sort({'createdAt':-1})
+res.status(200).json({message:'All variation Units retreived',success:true,data})
+}catch(err){
+    res.status(400).json({message:"Something went wrong",success:false,err:err})
+}
 })
 module.exports = router;
