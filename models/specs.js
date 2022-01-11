@@ -5,15 +5,7 @@ const variationSchema=new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'user'
     },
-    variationId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'variation'
-    },
-    variationName:{
-        type:String,
-        required:true
-    },
-    unitName:{
+   specsName:{
         type:String,
         required:true
     },
@@ -24,6 +16,6 @@ const variationSchema=new Schema({
 
 },{timestamps:true})
 
-const variationModel=mongoose.model('variationUnit',variationSchema)
+const specsModel=mongoose.model('specs',variationSchema)
 
-module.exports=variationModel;
+module.exports=specsModel;

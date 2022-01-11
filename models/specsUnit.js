@@ -1,15 +1,15 @@
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema
-const variationSchema=new Schema({
+const specsUnitSchema=new Schema({
     userId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'user'
     },
-    variationId:{
+    specsId:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'variation'
+        ref:'specs'
     },
-    variationName:{
+    specsName:{
         type:String,
         required:true
     },
@@ -24,6 +24,6 @@ const variationSchema=new Schema({
 
 },{timestamps:true})
 
-const variationModel=mongoose.model('variationUnit',variationSchema)
+const specsUnitModel=mongoose.model('specsUnit',specsUnitSchema)
 
-module.exports=variationModel;
+module.exports=specsUnitModel;

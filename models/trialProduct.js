@@ -1,0 +1,134 @@
+const mongoose=require('mongoose')
+const Schema=mongoose.Schema;
+const trialProductSchema=new Schema({
+userId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'user'
+},
+product:{
+    type:String,
+    required:true
+},
+tiosPoint:{
+    type:Number,
+    required:true
+},
+category:{
+    type:String,
+    required:true
+},
+productName:{
+    type:String,
+    required:true
+},
+rating:{
+    number:{
+    type:Number,
+    default: 0
+    },
+    star:{
+    type:Number,
+    default: 0
+        }
+},
+
+price:{
+    purchasePrice:{
+        type:Number,
+        required:true
+    },
+    sellingPrice:{
+        type:Number,
+        required:true
+    },
+    discountPercentage:{
+        type:Number,
+        required:true
+    },
+    savingPrice:{
+        type:Number,
+        required:true
+    },
+    taxType:{
+        type:String,
+        default:'GST'
+    },
+    taxPercentage:{
+        type:Number,
+        required:true
+    },
+    taxPrice:{
+        type:Number,
+        required:true
+    }
+},
+specsAndVariation:{
+    specsName:{
+        type:String,
+        required:true
+    },
+    specsUnit:{
+        type:String,
+        required:true
+    },
+    weight:{
+        type:Number
+    },
+    color:{
+        type:String
+    },
+    size:{
+        type:String
+    }
+},
+stock:{
+    type:Number,
+    required:true,
+    default:1
+},
+originDetails:{
+    origin:{
+        type:String,
+    },
+    type:{
+        type:String
+    },
+    certification:{
+        type:String
+    },
+    mapImage:{
+        type:String
+    }
+},
+productIdentification:{
+    type:{
+        type:String
+    } ,
+    number:{
+        type:String
+    }
+},
+productImage:{
+type:Array
+},
+processDetails:{
+    processShortDetail:{
+    type:String
+    },
+    processDescription:{
+        type:String 
+    },
+    processImage:{
+        type:Array
+    }
+},
+status:{
+    type:Boolean,
+    required:true,
+    default:true
+}
+
+})
+
+const trailProductModel=mongoose.model('trialProducts',trialProductSchema);
+module.exports=trailProductModel

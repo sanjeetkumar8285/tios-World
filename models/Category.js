@@ -1,77 +1,57 @@
-const { Schema, model } = require("mongoose");
-var productlineSchema = new Schema({
-
-    category_name: {
+const mongoose=require('mongoose')
+const Schema=mongoose.Schema;
+const categorySchema=new Schema({
+    userId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
+    categoryName: {
         type: String,
         required: [true, 'Please fill the category name'],
     },
     slug: {
         type: String,
-        required: [true, 'Please fill the category name'],
+        index:true
+    }, 
+    parent_Id: {
+        type: mongoose.Schema.Types.ObjectId,
+        default:null,
+        ref: 'category'
     },
-    subcategories_Id: [{
-        type: Schema.Types.ObjectId,
-        ref: 'subproductlineModel'
-    }],
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    }
-})
 
-const productlineModel = model('productline', productlineSchema);
+},{timestamps:true})
 
-
-productlineModel.schema.path('category_name').validate(
-    {
-        validator: async function ()
-        {
-            const pline = await productlineModel.findOne({ category_name: this.category_name });
-            console.log(pline)
-            if (pline)
-            {
-                if (this._id.toString() == pline._id.toString())
-                {
-                    return true
-                } else
-                {
-                    return false
-                }
-            } else
-            {
-                return true;
-            }
-        },
-        message: 'Category name must be uniuqe'
-    }
-);
+function slugify(string) {
+    const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìıİłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+    const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
+    const p = new RegExp(a.split('').join('|'), 'g')
+  
+    return string.toString().toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with -
+      .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+      .replace(/&/g, '-and-') // Replace & with 'and'
+      .replace(/[^\w\-]+/g, '') // Remove all non-word characters
+      .replace(/\-\-+/g, '-') // Replace multiple - with single -
+      .replace(/^-+/, '') // Trim - from start of text
+      .replace(/-+$/, '') // Trim - from end of text
+  }
 
 
-productlineModel.schema.path('slug').validate(
-    {
-        validator: async function ()
-        {
-            const pline = await productlineModel.findOne({ slug: this.slug });
-            if (pline)
-            {
-                if (this._id.toString() == pline._id.toString())
-                {
-                    return true
-                } else
-                {
-                    return false
-                }
-            } else
-            {
-                return true;
-            }
-        },
-        message: 'category slug must be unique!'
-    }
-);
+  categorySchema.pre('save', async function (next) {
+    this.slug = slugify(this.categoryName);
+    next();
+});
+    const autoPopulateChildren = function (next) {
+        this.populate('parent_Id');
+        next();
+    };
+    
+    categorySchema
+.pre('find', autoPopulateChildren)
+    
 
-module.exports = productlineModel
+
+const categoryModel=mongoose.model('category',categorySchema)
+
+module.exports=categoryModel
+  

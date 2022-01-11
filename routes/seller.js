@@ -2,10 +2,10 @@ var express = require('express');
 var router = express.Router();
 var userModel = require("../models/User");
 var ProductlineModel = require("../models/Category")
-var Product = require("../models/Product");
+var Product = require("../models/trialProduct");
 const { NotExtended } = require('http-errors');
 const auth = require('../middlewares/auth');
-
+const wareHouseModel=require('../models/wareHouse');
 
 router.get('/', async (req, res) =>
 {
@@ -104,6 +104,72 @@ router.delete("/product/delete/:id", auth.isLoggedIn, async (req, res) =>
 })
 
 
+//wareHoue CRUD
+
+router.post('/wareHouse',auth.isLoggedIn,async(req,res)=>{
+try{
+const {wareHouseName,contactName,contactNumber,address,pincode,status}=req.body
+const wareHouse=new wareHouseModel({
+    userId:req.user._id,
+    wareHouseName,
+    contact_person_name:contactName,
+    contact_person_no:contactNumber,
+    address,
+    pincode,
+    status
+})
+const data=await wareHouse.save();
+res.status(201).json({message:"wareHouse created Successfully",success:true,data})
+}catch(err){
+    res.status(400).json({message:"Something went wrong",success:false,err:err.message});
+}
+})
+
+router.get('/wareHouse',auth.isLoggedIn,async(req,res)=>{
+try{
+    const data=await wareHouseModel.find({}).sort({'createdAt':-1})
+    res.status(200).json({message:"all warehouse retrieved",success:true,data})
+
+}catch(err){
+    res.status(400).json({message:"Something went wrong",success:false,err:err.message});
+}
+})
+
+router.delete('/wareHouse/:id',auth.isLoggedIn,async(req,res)=>{
+    try{
+const id=req.params.id
+const wareHouseData=await wareHouseModel.findById(id);
+if(!wareHouseData){
+    return res.status(404).json({message:"wareHouse didn't found",success:false})
+}
+const data=await wareHouseData.remove();
+res.status(200).json({message:"wareHouse deleted successfully",success:true,data})
+    }catch(err){
+        res.status(400).json({message:"Something went wrong",success:false,err:err.message});
+    }
+})
+
+router.put('/wareHouse/:id',auth.isLoggedIn,async(req,res)=>{
+try{
+const id=req.params.id
+const {wareHouseName,contactName,contactNumber,address,pincode,status}=req.body
+const wareHouseData=await wareHouseModel.findById(id);
+if(!wareHouseData){
+    return res.status(404).json({message:"wareHouse didn't found",success:false})
+}
+const data=await wareHouseModel.findByIdAndUpdate(id,{
+    wareHouseName,
+    contact_person_name:contactName,
+    contact_person_no:contactNumber,
+    address,
+    pincode,
+    status
+})
+res.status(200).json({message:"wareHouse updated Successfully",success:true})
+}catch(err){
+    res.status(400).json({message:"Something went wrong",success:false,err:err.message});
+}
+})
 
 
 
