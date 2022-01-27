@@ -1,3 +1,4 @@
+const slugify=require('../utils/slugify');
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema;
 const customCollectionSchema=new Schema({
@@ -7,7 +8,7 @@ const customCollectionSchema=new Schema({
     },
     collectionName:{
         type:String,
-        required:true
+       required:true
     },
     slug:{
         type:String,
@@ -16,39 +17,43 @@ const customCollectionSchema=new Schema({
     curratedProducts:{
         productType:{
             type:String,
-            required:true
         },
-        productName:{
-            type:String,
-            required:true
+        currated_Products:{
+            type:Array
         }
     },
     trialProduct:{
         productType:{
             type:String,
-            required:true
+          
         },
-        productName:{
-            type:String,
-            required:true
+        trial_Product:{
+            type:Array
         }
     },
     sponsoredProduct:{
         productType:{
             type:String,
-            required:true
+           required:true
         },
-        productName:{
-            type:String,
-            required:true
+        sponsored_Product:{
+            type:Array
         }
     },
     status:{
         type:Boolean,
+        default:true,
         required:true
     }
 
 },{timestamps:true})
+
+
+
+customCollectionSchema.pre('save',async function(next){
+this.slug=slugify(this.slug)
+next();
+})
 
 const customCollectionModel=mongoose.model('customCollection',customCollectionSchema);
 module.exports=customCollectionModel;

@@ -19,13 +19,20 @@ const sellerSchema=new Schema({
     },
     password: {
         type: String,
-        // required: [true, 'Please fill the password field'],
+        required: [true, 'Please fill the password field'],
     },
     phone: {
         type: String,
         required: [true, 'Please fill phone number field'],
     },
+    type:{
+        type:String,
+        required:true
+    },
     logo:{
+        type:String
+    },
+    coverImage:{
         type:String
     },
     businessTitle: {
@@ -40,10 +47,44 @@ const sellerSchema=new Schema({
         type: String,
         required: [true, 'Please fill the aboutBusiness name field'],
     },
-    images:{
-        type:Array
-    },
     aboutFounder:{
+        type:String,
+        required:true
+    },
+    founder1:{
+        founderImage1:{
+        type:String
+        },
+        founderName1:{
+        type:String
+        }
+    },
+    founder2:{
+        founderImage2:{
+        type:String
+        },
+        founderName2:{
+        type:String
+        }
+    },
+    founder3:{
+        founderImage3:{
+        type:String
+        },
+        founderName3:{
+        type:String
+        }
+    },
+    commision:{
+        commisionType:{
+            type:String,
+            required:true
+        },
+        commisionPercentage:{
+            type:Number
+        }
+    },
+    payoutTime:{
         type:String,
         required:true
     },

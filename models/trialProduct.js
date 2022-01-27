@@ -109,8 +109,16 @@ productIdentification:{
     }
 },
 productImage:{
-type:Array
-},
+    frontImage:{
+        type:String
+    },
+    backImage:{
+        type:String
+    },
+    galleryImages:{
+        type:Array
+    }
+    },
 processDetails:{
     processShortDetail:{
     type:String

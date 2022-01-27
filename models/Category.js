@@ -1,3 +1,4 @@
+const slugify=require('../utils/slugify');
 const mongoose=require('mongoose')
 const Schema=mongoose.Schema;
 const categorySchema=new Schema({
@@ -13,6 +14,19 @@ const categorySchema=new Schema({
         type: String,
         index:true
     }, 
+    regularDetails:{
+        type:String,
+    },
+    organicDetails:{
+        type:String,
+    },
+    bannerImage:{
+        type:String
+    },
+    isEndLevelCategory:{
+        type:Boolean,
+        default:false
+    },
     parent_Id: {
         type: mongoose.Schema.Types.ObjectId,
         default:null,
@@ -21,33 +35,20 @@ const categorySchema=new Schema({
 
 },{timestamps:true})
 
-function slugify(string) {
-    const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìıİłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
-    const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
-    const p = new RegExp(a.split('').join('|'), 'g')
-  
-    return string.toString().toLowerCase()
-      .replace(/\s+/g, '-') // Replace spaces with -
-      .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
-      .replace(/&/g, '-and-') // Replace & with 'and'
-      .replace(/[^\w\-]+/g, '') // Remove all non-word characters
-      .replace(/\-\-+/g, '-') // Replace multiple - with single -
-      .replace(/^-+/, '') // Trim - from start of text
-      .replace(/-+$/, '') // Trim - from end of text
-  }
+
 
 
   categorySchema.pre('save', async function (next) {
     this.slug = slugify(this.categoryName);
     next();
 });
+
     const autoPopulateChildren = function (next) {
         this.populate('parent_Id');
         next();
     };
     
-    categorySchema
-.pre('find', autoPopulateChildren)
+categorySchema.pre('find', autoPopulateChildren)
     
 
 

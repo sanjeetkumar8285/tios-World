@@ -1,3 +1,4 @@
+const slugify=require('../utils/slugify');
 const mongoose=require('mongoose');
 const Schema=mongoose.Schema
 const collectionSchema=new Schema({
@@ -5,7 +6,7 @@ const collectionSchema=new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'user'
     },
-    name:{
+    collectionName:{
         type:String,
         required:[true,"Please fill the Product Name"]
     },
@@ -13,17 +14,20 @@ const collectionSchema=new Schema({
         type: String,
         required: [true, 'Please fill the Slug Name'],
     },
-    products:{
+    categoryName:{
+        type:String,
+        required:true
+    },
+    categoryId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'category'
+    },
+    productType:{
     type:String,
-    required: [true, 'Please fill the Product Name']
+    required: true
 },
-    regularDetails:{
-    type:String,
-    required:[true, 'Please fill the Regular Details']
-},
-    organicSubCategoryDetails:{
-    type:String,
-    required:[true, 'Please fill the product Name']
+products:{
+    type:Array
 },
     status:{
     type:Boolean,
@@ -34,6 +38,13 @@ const collectionSchema=new Schema({
     required:true
 }
 },{timestamps:true})
+
+
+
+collectionSchema.pre('save',async function(next){
+    this.slug=slugify(this.slug)
+    next();
+})
 
 const collectionModel=mongoose.model('collection',collectionSchema)
 module.exports=collectionModel;
